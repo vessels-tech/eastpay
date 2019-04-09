@@ -31,7 +31,7 @@ admin-deploy-config:
 ## 
 
 env:
-	cat ${env_dir}/.env.${stage}.sh ${env_dir}/env.${stage}.sh > /tmp/ep_env
+	# cat ${env_dir}/.env.${stage}.sh ${env_dir}/env.${stage}.sh > /tmp/ep_env
 
 switch:
 	@echo switching to stage: ${stage}
@@ -82,12 +82,12 @@ test-service:
 # Deployment
 ##
 deploy:
-	@make env lint build
+	# @make env lint build
 	firebase deploy --only functions
 
 deploy-public:
 	# @make env lint build test-unit test-service
-	# @make env
+	@make env
 	firebase deploy --only hosting
 
 
