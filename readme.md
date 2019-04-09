@@ -1,4 +1,16 @@
-#EastPay
+# EastPay
+## VesselsTech + Teller Collaboration for the 2019 Mojaloop Bootcamp
+
+## Development
+
+```bash
+touch /tmp/ep_env
+```
+
+## Urls:
+
+Home: https://eastpay-ml.firebaseapp.com
+
 
 
 ## Api
@@ -16,25 +28,25 @@ Example:
 
 GET /quote?sourceCurrency=TZS&destCurrency=RMB&destAmount=260
 
-
 _response_
+```json
 [
   {
-    paymentMethod: "M-Pesa Mastercard",
-    fx: 0.0024,
-    fees: [
+    "paymentMethod": "M-Pesa Mastercard",
+    "fx": 0.0024,
+    "fees": [
       {
-        currency: "TSH",
-        amount: 2000,
+        "currency": "TSH",
+        "amount": 2000,
       }
     ],
-    sourceTotal: 85245,
-    sourceCurrency: "TSH",
-    handoffUrl: "https://url.com",
+    "sourceTotal": 85245,
+    "sourceCurrency": "TSH",
+    "handoffUrl": "https://url.com",
   }
   ...
 ]
-
+```
 
 
 ## Interface
