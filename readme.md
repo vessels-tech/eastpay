@@ -10,6 +10,7 @@ touch /tmp/ep_env
 ## Urls:
 
 Home: https://eastpay-ml.firebaseapp.com
+https://us-central1-eastpay-ml.cloudfunctions.net/default-quotes/quotes
 
 
 
