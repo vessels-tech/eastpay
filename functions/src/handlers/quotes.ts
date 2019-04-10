@@ -4,6 +4,9 @@ import morgan from 'morgan';
 //@ts-ignore
 import morganBody from 'morgan-body';
 import ErrorHandler from '../utils/ErrorHandler';
+import MojaloopConnector, { CurrencyPair, Currency } from '../api/MojaloopConnector';
+import ExternalQuotes from '../api/ExternalQuotes';
+import { ResultType } from '../utils/AppProviderTypes';
 // import { relayDefaultCountrycode } from '../utils/Env';
 // import FirebaseAuth from '../middlewares/FirebaseAuth';
 // import { formatMobile, sleep } from '../utils';
@@ -33,10 +36,33 @@ module.exports = (functions: any) => {
    * GetQuotes
    * 
    */
-  app.get('/quotes', (req, res) => {
+  app.get('/quotes', async (req, res) => {
     console.log("req.body is", JSON.stringify(req.body, null, 2));
 
     //TODO: get the user's phone number, check that its in a whitelist.
+    const mlApi = new MojaloopConnector();
+    const quoteApi = new ExternalQuotes();
+
+    //TODO: get the values out of the req params
+    const currencyPair: CurrencyPair = {
+      source: Currency.RMB,
+      destination: Currency.TSH,
+    };
+    const amount = 1000;
+
+    const [mlQuoteResult, externalQuoteResult] = await Promise.all([
+      mlApi.getQuotes([], currencyPair, amount),
+      quoteApi.getExternalQuotes([]),
+    ]);
+
+    if (mlQuoteResult.type === ResultType.ERROR) {
+      return mlQuoteResult;
+    }
+
+    if (externalQuoteResult.type === ResultType.ERROR) {
+      return externalQuoteResult;
+    }
+
 
     const data = [
       {
