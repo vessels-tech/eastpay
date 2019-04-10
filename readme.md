@@ -50,6 +50,12 @@ _response_
 ]
 ```
 
+With Curl:
+```bash
+curl https://us-central1-eastpay-ml.cloudfunctions.net/default-quotes/quotes
+curl http://localhost:5000/eastpay-ml/us-central1/default-quotes/quotes
+```
+
 
 ## Interface
 

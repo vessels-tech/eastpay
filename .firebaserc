@@ -1,5 +1,5 @@
 {
   "projects": {
-    "default": "eastpay-ml"
+    "development": "eastpay-ml"
   }
 }
