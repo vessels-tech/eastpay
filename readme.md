@@ -10,6 +10,7 @@ touch /tmp/ep_env
 ## Urls:
 
 Home: https://eastpay-ml.firebaseapp.com
+Landing Page for WhatsApp Signup: https://eastpay-ml.firebaseapp.com/landing.html
 https://us-central1-eastpay-ml.cloudfunctions.net/default-quotes/quotes
 
 
