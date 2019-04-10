@@ -23,6 +23,7 @@
     "express-validation": "^1.0.2",
     "firebase-admin": "~6.0.0",
     "firebase-functions": "^2.1.0",
+    "joi": "^14.3.1",
     "morgan": "^1.9.1",
     "morgan-body": "^2.4.5",
     "request": "^2.88.0",

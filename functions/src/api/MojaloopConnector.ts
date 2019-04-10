@@ -16,14 +16,27 @@ export type PaymentMethod = {
   password: string,
 }
 
-export type Quote = {
+export type Fee = {
+  currency: Currency,
+  amount: number
+}
 
+export type Quote = {
+  dfspName: string,
+  fx: number,
+  fees: Array<Fee>,
+  sourceTotal: number,
+  sourceCurrency: Currency
+  handoffUrl: string,
 }
 
 export enum Currency {
-  TSH = "TSH",
+  TZS = "TZS",
+  USD = "USD",
   RMB = "RMB",
 }
+
+export const availableCurrencies = Object.keys(Currency);
 
 export type CurrencyPair = {
   source: Currency,
@@ -37,25 +50,31 @@ export type FinteractQuoteResponse = {
   state: string,
 }
 
+export type PaymentMethodConstants = {
+  dfspName: string, //Pretty name for a DFSP
+  handoffUrl: string, //handoff url
+}
+
 
 export default class MojaloopConnector {
 
   
   public async getQuotes(paymentMethods: Array<PaymentMethod>, pair: CurrencyPair, amount: number): Promise<SomeResult<Array<Quote>>> {
 
-    const results = await Promise.all(paymentMethods.map(m => this.getQuoteForMethod(m, amount)));
+    const results = await Promise.all(paymentMethods.map(m => this.getQuoteForMethod(m, pair, amount)));
 
     if (resultsHasError(results)) {
       return makeError("Error with getQuotes");
     }
 
-    console.log("results are", results);
     const quotes: Array<Quote> = []
     results.forEach(r => {
       if (r.type === ResultType.SUCCESS) {
         quotes.push(r.result)
       }
     });
+
+    console.log("quotes are", quotes);
     
     return makeSuccess(quotes)
   }
@@ -67,10 +86,8 @@ export default class MojaloopConnector {
     }
   }
 
-  private getQuoteForMethod(paymentMethod: PaymentMethod, amount: number): Promise<SomeResult<Quote>> {
+  private getQuoteForMethod(paymentMethod: PaymentMethod, pair: CurrencyPair, amount: number): Promise<SomeResult<Quote>> {
     const { baseUrl, tenantId, username, password} = paymentMethod;
-
-
 
     const method = `interoperation/quotes`;
     const url = `${baseUrl}/${method}`;
@@ -91,7 +108,11 @@ export default class MojaloopConnector {
         requestCode,
         quoteCode,
         accountId: '31d77b06141c11e9ab14d6',
-        amount: { amount: '200', currency: 'TZS' },
+        amount: { 
+          amount, 
+          currency: Currency.TZS,
+          // currency: pair.destination //can only use TZs
+        },
         amountType: 'RECEIVE',
         transactionRole: 'PAYER',
         transactionType: {
@@ -107,11 +128,92 @@ export default class MojaloopConnector {
 
 
     return request(options)
-    .then((response: FinteractQuoteResponse) => makeSuccess(response))
+    .then((response: FinteractQuoteResponse) => MojaloopConnector.formatQuote(response, paymentMethod, amount, pair))
+    .then((formatted: Quote) => makeSuccess<Quote>(formatted))
     .catch((err: Error) => {
       console.log("Error is", err.message);
-      return makeError(err.message);
+      return makeError<Quote>(err.message);
     });
   }
 
+  private static formatQuote(response: FinteractQuoteResponse, paymentMethod: PaymentMethod, amount: number, pair: CurrencyPair): Quote {
+    const {
+      dfspName,
+      handoffUrl,
+    } = MojaloopConnector.enrichPaymentMethod(paymentMethod);
+
+    //TODO: figure out what amount means... source or destination?
+    //We need it to be source.
+
+    //amount is the destination amount.
+    //source total = (amount/fx) + fee
+    //TODO: get a reasonable, randomized fx for a given currency pair
+    const fx = MojaloopConnector.fxForPair(pair);
+    const fee = response.fspFee.amount;
+    const sourceTotal = (amount/fx) + fee;
+
+    return {
+      dfspName,
+      fx,
+      fees: [
+        {
+          currency: response.fspFee.currency,
+          amount: response.fspFee.amount
+        }
+      ],
+      sourceTotal,
+      sourceCurrency: Currency.TZS,
+      handoffUrl,
+    }
+  }
+
+  /**
+   * fxForPair
+   * 
+   * Generate a semi random exchange rate for a currency pair
+   * @param pair 
+   */
+  public static fxForPair(pair: CurrencyPair): number {
+    const fx = {
+      TZS: {
+        TZS: 1,
+        USD: 0.00043,
+        RMB: 0.0029,
+      },
+      USD: {
+        TZS: 2314.90,
+        USD: 1,
+        RMB: 6.72,
+      },
+      RMB: {
+        TZS: 344.661579184,
+        USD: 0.15,
+        RMB: 1,
+      }
+    }
+
+    let baseRate = fx[pair.source][pair.destination];
+    const random = (Math.random() - 1) / 100;
+    baseRate = baseRate  + (baseRate * random);
+
+    return baseRate
+  }
+
+  private static enrichPaymentMethod(paymentMethod: PaymentMethod): PaymentMethodConstants {
+    
+    switch (paymentMethod.dfsp) {
+      case DFSP.Buffalo: {
+        return {
+          dfspName: 'Buffalo Bank',
+          handoffUrl: "https://vesselstech.com",
+        }
+      }
+      default: {
+        return {
+          dfspName: 'Other Bank',
+          handoffUrl: "https://textteller.com",
+        }
+      }
+    }
+  }
 }

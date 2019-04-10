@@ -1,14 +1,59 @@
+//@ts-ignore
+import validate from 'express-validation';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 //@ts-ignore
 import morganBody from 'morgan-body';
 import ErrorHandler from '../utils/ErrorHandler';
-import MojaloopConnector, { CurrencyPair, Currency, DFSP } from '../api/MojaloopConnector';
+import MojaloopConnector, { CurrencyPair, DFSP, Quote, availableCurrencies } from '../api/MojaloopConnector';
 import ExternalQuotes from '../api/ExternalQuotes';
 import { ResultType } from '../utils/AppProviderTypes';
 const bodyParser = require('body-parser');
 
+const Joi = require('joi');
+
+const paymentMethods = [
+  {
+    dfsp: DFSP.Buffalo,
+    baseUrl: 'http://buffalo.mlabs.dpc.hu/fineract-provider/',
+    tenantId: 'tn01',
+    username: 'mifos',
+    password: 'password'
+  },
+  // {
+  //   dfsp: DFSP.Lion,
+  //   baseUrl: 'http://lion.mlabs.dpc.hu/fineract-provider/',
+  //   tenantId: 'tn02',
+  //   username: 'mifos',
+  //   password: 'password'
+  // }
+  //TODO: add more methods
+];
+
+
+const enrichData = (data: Array<Quote>, currencyPair: CurrencyPair): Array<Quote> => {
+
+  //TODO: also edit some of the existing data to make things nicer
+
+  data.push(
+    {
+      dfspName: "M-Pesa Mastercard",
+      "fx": 0.0024,
+      "fees": [
+        {
+          "currency": currencyPair.source,
+          "amount": 2000,
+        }
+      ],
+      "sourceTotal": 85245,
+      "sourceCurrency": currencyPair.source,
+      "handoffUrl": "https://url.com",
+    }
+  );
+
+  return data;
+}
 
 module.exports = (functions: any) => {
   const app = express();
@@ -30,42 +75,38 @@ module.exports = (functions: any) => {
    * GetQuotes
    * 
    */
-  app.get('/quotes', async (req, res) => {
-    console.log("req.body is", JSON.stringify(req.body, null, 2));
+  const getQuotesValidation = {
+    options: {
+      allowUnknownBody: false,
+    },
+    query: {
+      sourceCurrency: Joi.string().required().valid(availableCurrencies),
+      destCurrency: Joi.string().required().valid(availableCurrencies),
+      destAmount: Joi.number().required(),
+      shouldEnrich: Joi.boolean().default(false),
+    }
+  }    
 
-    //TODO: get the user's phone number, check that its in a whitelist.
-    const mlApi = new MojaloopConnector();
-    const quoteApi = new ExternalQuotes();
+  app.get('/quotes', validate(getQuotesValidation), async (req, res) => {
+    const {
+      sourceCurrency,
+      destCurrency,
+      destAmount,
+      shouldEnrich,
+    } = req.query;
 
-    //TODO: get the values out of the req params
     const currencyPair: CurrencyPair = {
-      source: Currency.RMB,
-      destination: Currency.TSH,
+      source: sourceCurrency,
+      destination: destCurrency,
     };
-    const amount = 1000;
-
-    const paymentMethods = [
-      {
-        dfsp: DFSP.Buffalo,
-        baseUrl: 'http://buffalo.mlabs.dpc.hu/fineract-provider/',
-        tenantId: 'tn01',
-        username: 'mifos',
-        password: 'password'
-      },
-      // {
-      //   dfsp: DFSP.Lion,
-      //   baseUrl: 'http://lion.mlabs.dpc.hu/fineract-provider/',
-      //   tenantId: 'tn02',
-      //   username: 'mifos',
-      //   password: 'password'
-      // }
-      //TODO: add more methods
-    ];
-
+    const amount = destAmount;
+    
+    const mlApi = new MojaloopConnector();
+    const externalQuoteApi = new ExternalQuotes();
 
     const [mlQuoteResult, externalQuoteResult] = await Promise.all([
       mlApi.getQuotes(paymentMethods, currencyPair, amount),
-      quoteApi.getExternalQuotes([]),
+      externalQuoteApi.getExternalQuotes([], currencyPair, amount),
     ]);
 
     if (mlQuoteResult.type === ResultType.ERROR) {
@@ -76,25 +117,17 @@ module.exports = (functions: any) => {
       return externalQuoteResult;
     }
 
-
-    //TODO: add a demo data enrichment wrapper or something
-
-    const data = [
-      {
-        "paymentMethod": "M-Pesa Mastercard",
-        "fx": 0.0024,
-        "fees": [
-          {
-            "currency": "TSH",
-            "amount": 2000,
-          }
-        ],
-        "sourceTotal": 85245,
-        "sourceCurrency": "TSH",
-        "handoffUrl": "https://url.com",
-      }
-    ];
-
+    //Format the results
+    const data: Array<Quote> = [];
+    mlQuoteResult.result.forEach(q => data.push(q));
+    externalQuoteResult.result.forEach(q => data.push(q));
+    
+    if (shouldEnrich) {
+      enrichData(data, currencyPair);
+    }
+    
+    //Sort by total cost ascending
+    data.sort((a, b) => a.sourceTotal - b.sourceTotal);
     return res.json(data);
   });
 
