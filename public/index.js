@@ -6,6 +6,8 @@ var bestMethod
 var goButton
 
 
+var country = "";
+
 var results = [];
 
 function throttle(method, scope) {
@@ -56,13 +58,14 @@ function handoff(url, bankName) {
 
   setTimeout(function() {
     $("#handoff_modal").removeClass('is-active');
-  }, 2000);
+  }, 10000);
 }
 
 window.submitForm = function() {
-  const country = document.getElementById('field_country').value;
+  country = document.getElementById('field_country').value;
   const amount = document.getElementById('field_amount').value;
   const currency = document.getElementById('field_currency').value;
+
 
   if (amount === "") {
     return;
@@ -76,7 +79,7 @@ window.submitForm = function() {
   var settings = {
     "async": true,
     "crossDomain": true,
-    "url": `https://us-central1-eastpay-ml.cloudfunctions.net/default-quotes/quotes?sourceCurrency=TZS&destCurrency=${currency}&destAmount=${amount}&shouldEnrich=false`,
+    "url": `https://us-central1-eastpay-ml.cloudfunctions.net/default-quotes/quotes?sourceCurrency=${country}&destCurrency=${currency}&destAmount=${amount}&shouldEnrich=false`,
     "method": "GET",
   }
 
@@ -109,7 +112,7 @@ function updateResults() {
   );
   const sourceCurrency = results[0].sourceCurrency;
   bestMethod.innerText = results[0].dfspName;
-  bestPrice.innerText = `${lowestSourceTotalFormatted} ${sourceCurrency}`;
+  bestPrice.innerText = `${lowestSourceTotalFormatted} ${country}`;
 
   $('html, body').animate({
     scrollTop: $("#results").offset().top
@@ -141,7 +144,7 @@ function updateTable() {
     var handoffUrl = result.handoffUrl;
     var button = `<a class="button is-link" onclick="handoff('${handoffUrl}', '${name}')">Pay</a>`;
   
-    $('tbody').append(`<tr><td>${name}</td><td>${fx}</td><td>${fee}TZS</td><td>${total}</td><td>${button}</td></tr>`);
+    $('tbody').append(`<tr><td>${name}</td><td>${fx}</td><td>${fee} ${country}</td><td>${total}</td><td>${button}</td></tr>`);
   }
 }
 

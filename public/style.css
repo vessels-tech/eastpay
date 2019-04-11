@@ -1,11 +1,9 @@
-
-section .hero-body {
-  max-width: 40rem;
-  margin: auto;
+.title.is-1 {
+  font-size: 4rem;
 }
 
 .button {
-  min-width: 50px;
+  min-width: 70px;
 }
 
 .select {
@@ -25,14 +23,28 @@ section div div p {
   padding-right:0.5em;
   padding-bottom:0;
   padding-left:0;
+  font-size: 0.7rem;
 }
 
 #tableSection .hero-body {
   padding-top:0;
   padding-right:0.0em;
-  padding-bottom:0;
-  padding-left:0.0em;
+  padding-bottom:0.3em;
+  padding-left:0.4em;
 }
+
+#footer_text {
+  position: absolute;
+  bottom: 5px;
+  text-align: center;
+  align-self: center;
+  padding-bottom: 5px;
+}
+
+#footer_text a {
+  border-bottom: 3px solid hsl(141, 71%, 48%)
+}
+
 
 @media (min-width: 402px) {
   .hidden-ss {
@@ -55,6 +67,11 @@ section div div p {
 
   .button {
     min-width: 75px;
+  }
+
+  section .hero-body {
+    max-width: 40rem;
+    margin: auto;
   }
 }
 
