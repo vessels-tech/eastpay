@@ -3,43 +3,70 @@
 
 <head>
   <!-- TODO: remove this, dev only -->
-  <script type="text/javascript" src="http://livejs.com/live.js"></script>
+  <!-- <script type="text/javascript" src="http://livejs.com/live.js"></script> -->
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EastPay - Easy money to Alibaba</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
-  <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script> -->
+  <script src="index.js"></script>
 </head>
 
 <body>
-  <section class="hero is-info is-large is-bold">
+  <div id='handoff_modal' class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <!-- Any other Bulma elements you want -->
+
+      <div class="box has-text-centered">
+        <h2 class="subtitle">
+          Taking you to <strong id="selected_bank_name"></strong>
+        </h2>
+
+        <a 
+          class="button is-large is-fullwidth is-loading">
+          GO
+        </a>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
+  </div>
+
+  <section class="hero is-info is-bold is-fullheight">
     <div class="hero-body">
       <div class="container">
-        <h1 class="title is-1">
+        <h1 class="title is-1" style="margin-bottom: 2rem;">
           EastPay
         </h1>
 
         <div class="" style="display:inline-block">
           <p style="float:left; padding-right: 1rem;" class="has-text-weight-semibold is-size-4">I am in </p>
           <div style="float:left" class="select">
-            <select>
-              <option>Tanzania 🇹🇿</option>
-              <option>Kenya 🇰🇪</option>
-              <option>Rwanda 🇷🇼</option>
+            <select id="field_country">
+              <option value="TZH">Tanzania 🇹🇿</option>
+              <option value="KSH">Kenya 🇰🇪</option>
+              <option value="RWF">Rwanda 🇷🇼</option>
             </select>
           </div>
         </div>
 
+        </br>
+
         <div class="" style="display:inline-block">
-          <p style="float:left; padding-right: 1rem;" class="has-text-weight-semibold is-size-4">I want to </p>
-          <div style="float:left; margin-right: 1rem;" class="select">
+          <p style="float:left; padding-right: 0.5rem;" class="has-text-weight-semibold is-size-4">I want to </p>
+          <div style="float:left; margin-right: 0.5rem;" class="select">
             <select>
               <option>BUY</option>
               <option>SELL</option>
             </select>
           </div>
-          <p style="float:left; padding-right: 1rem;" class="has-text-weight-semibold is-size-4">on</p>
+
+          <br class="hidden-ss">
+
+          <p style="float:left; padding-right: 0.5rem;" class="has-text-weight-semibold is-size-4">from</p>
           <div style="float:left" class="select">
             <select>
               <option>Alibaba</option>
@@ -49,75 +76,93 @@
           </div>
         </div>
 
+        </br>
         <div class="" style="display:inline-block">
           <p style="float:left; padding-right: 1rem;" class="has-text-weight-semibold is-size-4">I need to pay </p>
-          <div style="float:left; margin-right: 1rem;" class="control">
-            <input class="input" type="text" placeholder="100"/>
+          <br class="hidden-ss">
+          <div style="float:left; margin-right: 1rem;clear:none;width:75px" class="control">
+            <input id="field_amount" class="input" type="number" placeholder="100"/>
           </div>
           
           <div style="float:left" class="select">
-            <select>
-              <option>CNY</option>
+            <select id="field_currency">
+              <option value="RMB">🇨🇳RMB</option>
+              <option value="USD">🇺🇸USD</option>
+              <option value="TZS">🇹🇿TZS</option>
+              <option value="KSH">🇰🇪KSH</option>
+              <option value="RWF">🇷🇼RWF</option>
             </select>
           </div>
         </div>
-
-       
-      
+        <a id="goButton" style="margin-top: 5rem;" onclick="submitFormThrottled()" class="button is-large is-fullwidth is-success">GO</a>
       </div>
+
     </div>
   </section>
 
-  <section class="is-info is-large is-bold">
+  <section id="results" class="is-info is-large is-bold">
     <div class="hero-body">
-      <div class="box">
-        <h2 class="subtitle">
-          The cheapest payment method is with: <strong>Lion Bank</strong>
-        </h2>
-        <!-- <div class="level">
-          <h2 class="subtitle is-5 is-bold level-left">
-            10,021 TZH
+
+      <!-- Hide when loading -->
+      <div id="resultBox">
+        <div class="box">
+          <h2 class="subtitle">
+            The cheapest payment method is with: <strong id="bestMethod">Lion Bank</strong>
           </h2>
-
-          <a class="level-right">PAY</a>
-        </div> -->
-        <nav class="level">
-          <!-- Left side -->
-          <div class="level-left">
-            <div class="level-item">
-              <p class="subtitle is-5">
-                <strong>10,021 TZH</strong>
-              </p>
-            </div>
+          <div>
+            <nav class="level">
+              <!-- Left side -->
+              <div class="level-left">
+                <div class="level-item">
+                  <p class="subtitle is-5">
+                    <strong id="bestPrice"></strong>
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Right side -->
+              <div class="level-right">
+                <p class="level-item"><a class="button is-large is-fullwidth is-link" onclick="handoffCheapest()">Pay</a></p>
+              </div>
+            </nav>
           </div>
-        
-          <!-- Right side -->
-          <div class="level-right">
-            <p class="level-item"><a class="button is-large is-fullwidth is-success">PAY</a></p>
-          </div>
-        </nav>
+        </div>
       </div>
+
+      <div id="loading">
+        <a style="padding-top: 7rem;padding-bottom: 1rem;" class="button is-loading is-large is-fullwidth"></a>
+      </div>
+
     </div>
   </section>
 
-  <section class="is-info is-large">
+  <section id="tableSection" class="is-info is-large">
     <div class="hero-body">
-      <div class="container">
-        <h2 class="subtitle">
-          Here are your other methods:
-        </h2>
-        <table class="table is-fullwidth">
-          <thead>
-            <tr>
-              <th>Service</th>
-              <th>FX</th>
-              <th>Fee</th>
-              <th>Total</th>
-              <th></th>
-            </tr>
-          </thead>
-        </table>
-      </div>
+      <div id="compareTable">
+        <div class="">
+          <h2 class="subtitle">Here are your other methods:</h2>
+          <table class="table is-fullwidth">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>FX</th>
+                <th>Fee</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>38</td>
+                <td>23</td>
+                <td>12</td>
+                <td>3</td>
+                <td>68</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        </div>
     </div>
   </section>
 

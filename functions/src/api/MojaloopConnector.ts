@@ -34,6 +34,8 @@ export enum Currency {
   TZS = "TZS",
   USD = "USD",
   RMB = "RMB",
+  KSH = "KSH",
+  RWF = "RWF",
 }
 
 export const availableCurrencies = Object.keys(Currency);
@@ -179,18 +181,38 @@ export default class MojaloopConnector {
         TZS: 1,
         USD: 0.00043,
         RMB: 0.0029,
+        KSH: 1,
+        RWF: 1,
       },
       USD: {
         TZS: 2314.90,
         USD: 1,
         RMB: 6.72,
+        KSH: 1,
+        RWF: 1,
       },
       RMB: {
         TZS: 344.661579184,
         USD: 0.15,
         RMB: 1,
-      }
-    }
+        KSH: 1,
+        RWF: 1,
+      },
+      KSH: {
+        TZS: 344.661579184,
+        USD: 0.15,
+        RMB: 1,
+        KSH: 1,
+        RWF: 1,
+      },
+      RWF: {
+        TZS: 344.661579184,
+        USD: 0.15,
+        RMB: 1,
+        KSH: 1,
+        RWF: 1,
+      },
+    };
 
     let baseRate = fx[pair.source][pair.destination];
     const random = (Math.random() - 1) / 100;

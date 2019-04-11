@@ -26,7 +26,9 @@ export declare type Quote = {
 export declare enum Currency {
     TZS = "TZS",
     USD = "USD",
-    RMB = "RMB"
+    RMB = "RMB",
+    KSH = "KSH",
+    RWF = "RWF"
 }
 export declare const availableCurrencies: string[];
 export declare type CurrencyPair = {

@@ -1,0 +1,60 @@
+
+section .hero-body {
+  max-width: 40rem;
+  margin: auto;
+}
+
+.button {
+  min-width: 50px;
+}
+
+.select {
+  margin-top: 10px;
+}
+
+.input {
+  margin-top: 10px
+}
+
+section div div p {
+  padding-top: 10px;
+}
+
+.table td { 
+  padding-top:0;
+  padding-right:0.5em;
+  padding-bottom:0;
+  padding-left:0;
+}
+
+#tableSection .hero-body {
+  padding-top:0;
+  padding-right:0.0em;
+  padding-bottom:0;
+  padding-left:0.0em;
+}
+
+@media (min-width: 402px) {
+  .hidden-ss {
+    display: none !important;
+  }
+
+  .table td { 
+    padding-top: 0.5em;
+    padding-right: 0.75em;
+    padding-bottom: 0.5em;
+    padding-left: 0.75em;
+  }
+
+  #tableSection .hero-body {
+    padding-top: 3rem;
+    padding-right: 1.5rem;
+    padding-bottom: 3rem;
+    padding-left: 1.5rem;
+  }
+
+  .button {
+    min-width: 75px;
+  }
+}
+
