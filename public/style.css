@@ -34,7 +34,7 @@ section div div p {
 }
 
 #footer_text {
-  position: absolute;
+  /* position: absolute; */
   bottom: 5px;
   text-align: center;
   align-self: center;
