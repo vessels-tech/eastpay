@@ -6,21 +6,21 @@ import morgan from 'morgan';
 //@ts-ignore
 import morganBody from 'morgan-body';
 import ErrorHandler from '../utils/ErrorHandler';
-import MojaloopConnector, { CurrencyPair, DFSP, Quote, availableCurrencies } from '../api/MojaloopConnector';
+import MojaloopConnector, { CurrencyPair, Quote, availableCurrencies, PaymentMethod } from '../api/MojaloopConnector';
 import ExternalQuotes from '../api/ExternalQuotes';
 import { ResultType } from '../utils/AppProviderTypes';
 const bodyParser = require('body-parser');
 
 const Joi = require('joi');
 
-const paymentMethods = [
-  {
-    dfsp: DFSP.Buffalo,
-    baseUrl: 'http://buffalo.mlabs.dpc.hu/fineract-provider/',
-    tenantId: 'tn01',
-    username: 'mifos',
-    password: 'password'
-  },
+const paymentMethods: Array<PaymentMethod> = [
+  // {
+  //   dfsp: DFSP.Buffalo,
+  //   baseUrl: 'http://buffalo.mlabs.dpc.hu/fineract-provider/',
+  //   tenantId: 'tn01',
+  //   username: 'mifos',
+  //   password: 'password'
+  // },
   // {
   //   dfsp: DFSP.Lion,
   //   baseUrl: 'http://lion.mlabs.dpc.hu/fineract-provider/',
